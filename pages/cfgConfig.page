@@ -1,0 +1,135 @@
+<apex:page docType = "html-5.0" sidebar = "true" showHeader = "true" controller = "cfgConfigController">
+
+	<style type = "text/css">
+        h1 {
+            display: block;
+            font-size: 1.4em;
+            text-align: center;
+        }
+        .updatesBox{
+            border:1px solid #000000;
+            width: 50%;
+            padding: 5px;
+            text-align: center;
+            margin:auto;
+            background-color: #CCCCCC;
+            border-radius: 4px;
+
+        }
+        .updatesBox a, .pageLink {
+            display: inline-block;
+            margin: 0 5px;
+            color:rgb(0, 98, 128) !important;
+        }
+        .createCkj {
+            margin-top: 3px;
+        }
+        .ckjTable {
+            border: 2px solid #AAAAAA;
+            padding: 3px;
+            margin: 8px 0;
+            background-color: #EFEFEF;
+            border-radius: 4px;
+        }
+        .narrow {
+            width: 70px;
+        }
+        .ckjTableFormat tr:nth-child(odd) {
+            background-color: #EFEFEF;
+        }
+
+    </style>
+    <apex:pageBlock>
+
+        <apex:form>
+            <apex:actionStatus id = "status">
+                <apex:facet name = "start">
+                <div style = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 1000; background-color: black;">
+                    &nbsp;
+                </div>
+                <div style = "position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 30% 50%">
+                    <img src = "http://upload.wikimedia.org/wikipedia/commons/e/ed/Cursor_Windows_Vista.gif" />
+                </div>
+                </apex:facet>
+            </apex:actionStatus>
+
+            <div class = "updatesBox">
+                <h1>Edits</h1><br />
+                <div class = "newLinks">
+                    <a target = "__blank" href = "/lightning/o/LLC_BI__CFG_ConfigKey__c/new">Create New Key</a>
+                    <a target = "__blank" href = "/lightning/o/LLC_BI__CFG_ConfigValue__c/new">Create New Value</a>
+                </div>
+                <hr />
+                <div class = "createCkj">
+                    <apex:commandButton action = "{!deleteSelected}" value = "Delete Selected CKJs"  status = "status" />
+                    Delete Is Enabled? <apex:inputCheckbox value = "{!deleteAllowed}" />
+                </div>
+                <hr />
+                <div class = "createCkj">
+                    <label><h3>For The Product Type of </h3>
+                        <apex:selectList value = "{!selectedProductTypeForCkj}" size = "1" multiselect = "false" styleClass = "slds-select ">
+                            <apex:selectOptions value = "{!productTypesOptions}" />
+                            <apex:actionSupport event = "onchange"/>
+                        </apex:selectList>
+                    </label>
+                    <apex:commandButton action = "{!createSelectedCKJs}" value = "Join all Selcted Values and Keys"  status = "status" />
+                    <apex:outputPanel id="ckjCounter">(Will Create {!ckjCreateCount} CKjs)</apex:outputPanel>
+                </div>
+            </div>
+        </apex:form>
+
+        <div class = "ckjTable">
+            <h1>Selected Product Type:<a class = "pageLink" target = "__blank" href = "/{!selectedProductType}">{!selectedProductTypeName}</a></h1>
+            <apex:form>
+                <label><h3>Filter by Product Type</h3>
+                    <apex:selectList value = "{!selectedProductType}" onchange = "{!populateCKJ()}" size = "1" multiselect = "false" styleClass = "slds-select ">
+                        <apex:selectOptions value = "{!productTypesOptions}" />
+                        <apex:actionSupport event = "onchange" action = "{!populateCKJ}" />
+                    </apex:selectList>
+                </label>
+
+                <apex:pageBlockTable id = "ckjTable" value = "{!CKJList}" var = "row" styleClass = "ckjTableFormat">
+
+                    <apex:column headerValue = "Select CKJ" styleClass = "narrow">
+                        <apex:inputCheckbox value = "{!row.ckjSelected}">
+                            <apex:actionSupport event = "onchange" reRender = "false" />
+                        </apex:inputCheckbox>
+                    </apex:column>
+
+                    <apex:column headerValue = "CFG_CKJ">
+                        <apex:outputlink value = "/{!row.ckj.Id}">{!row.ckj.Name}</apex:outputlink>
+                    </apex:column>
+
+                    <apex:column headerValue = "Select Key" styleClass = "narrow">
+                        <apex:inputCheckbox value = "{!row.keySelected}">
+                            <apex:actionSupport event = "onchange" reRender = "ckjCounter" action="{!updateCkjCreateCount}" />
+                        </apex:inputCheckbox>
+                    </apex:column>
+
+                    <apex:column headerValue = "Config Key Name">
+                        <apex:outputlink value = "/{!row.ckj.CFG_ConfigKeys__c}">{!row.ckj.CFG_ConfigKeys__r.Name}</apex:outputlink>
+                    </apex:column>
+
+                    <apex:column headerValue = "Select Value" styleClass = "narrow">
+                        <apex:inputCheckbox value = "{!row.valueSelected}">
+                            <apex:actionSupport event = "onchange" reRender = "ckjCounter" action="{!updateCkjCreateCount}" />
+                        </apex:inputCheckbox>
+                    </apex:column>
+
+                    <apex:column headerValue = "Config Value Key">
+                        <apex:outputlink value = "/{!row.ckj.CFG_ConfigValue__c}">{!row.ckj.CFG_ConfigValue__r.Key__c}</apex:outputlink>
+                    </apex:column>
+
+                    <apex:column headerValue = "Config Value Category">
+                        <apex:outputlink value = "/{!row.ckj.CFG_ConfigValue__c}">{!row.ckj.CFG_ConfigValue__r.Category__c}</apex:outputlink>
+                    </apex:column>
+
+                    <apex:column headerValue = "Config Value fieldValue">
+                        <apex:outputlink value = "/{!row.ckj.CFG_ConfigValue__c}">{!row.ckj.CFG_ConfigValue__r.fieldValue__c}</apex:outputlink>
+                    </apex:column>
+
+                </apex:pageBlockTable>
+            </apex:form>
+        </div>
+    </apex:pageBlock>
+</apex:page>
